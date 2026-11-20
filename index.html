@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конвертер кода RFID-карты</title>
+<style>
+  * { box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  body {
+    background: linear-gradient(145deg, #eef2f8 0%, #d4dfee 100%);
+    min-height: 100vh; margin: 0;
+    display: flex; justify-content: center; align-items: center;
+    padding: 1rem;
+  }
+  .card {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 32px;
+    box-shadow: 0 25px 40px -12px rgba(0,20,30,0.35), 0 0 0 1px rgba(255,255,255,0.6) inset;
+    padding: 2rem;
+    width: 100%; max-width: 720px;
+  }
+  h1 {
+    font-size: 1.6rem; font-weight: 600; color: #1a2e3f;
+    text-align: center; margin: 0 0 1.5rem;
+    letter-spacing: -0.01em;
+  }
+  .row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .col { flex: 1 1 280px; min-width: 240px; }
+  label {
+    display: block; font-size: 0.85rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: #2c4a62; margin-bottom: 0.5rem;
+  }
+  textarea {
+    width: 100%; min-height: 130px; resize: vertical;
+    padding: 0.9rem 1rem;
+    font-size: 1.05rem; font-family: 'SF Mono', Consolas, monospace;
+    border: none; border-radius: 18px;
+    background: #ffffff; color: #0b1c26;
+    box-shadow: 0 6px 12px -6px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.04);
+    outline: none; transition: box-shadow 0.15s ease;
+    line-height: 1.5;
+  }
+  textarea:focus {
+    box-shadow: 0 10px 20px -8px rgba(30,90,140,0.3), 0 0 0 3px rgba(90,150,220,0.25);
+  }
+  textarea[readonly] { background: #f5f8fc; color: #0b2a3f; }
+  .actions {
+    display: flex; gap: 0.8rem; justify-content: center;
+    margin-top: 1.5rem; flex-wrap: wrap;
+  }
+  button {
+    padding: 0.9rem 2rem;
+    font-size: 1rem; font-weight: 600;
+    border: none; border-radius: 20px;
+    cursor: pointer; transition: all 0.15s ease;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #4a90e2, #2a6fc9);
+    color: white;
+    box-shadow: 0 8px 20px -8px rgba(40,100,180,0.6);
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px -8px rgba(40,100,180,0.7);
+  }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary {
+    background: #ffffff; color: #2c4a62;
+    box-shadow: 0 4px 10px -4px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05) inset;
+  }
+  .btn-secondary:hover { background: #f5f8fc; }
+  .hint {
+    margin-top: 1.2rem; font-size: 0.85rem; color: #4c667a;
+    text-align: center; line-height: 1.5;
+  }
+  .hint code {
+    background: rgba(0,0,0,0.05); padding: 0.1rem 0.4rem;
+    border-radius: 8px; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>📇 Конвертер кода RFID-карты</h1>
+
+    <div class="row">
+      <div class="col">
+        <label for="input">Десятичный код</label>
+        <textarea id="input" placeholder="Вставьте десятичный код&#10;Например: 1234567890&#10;Можно несколько через запятую/пробел/перенос строки"></textarea>
+      </div>
+      <div class="col">
+        <label for="output">Текстовый формат (F,C — вида 037,01594)</label>
+        <textarea id="output" readonly placeholder="Здесь появится результат..."></textarea>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="convertBtn">Конвертировать</button>
+      <button class="btn-secondary" id="copyBtn">Копировать результат</button>
+      <button class="btn-secondary" id="clearBtn">Очистить</button>
+    </div>
+
+    <div class="hint">
+      💡 Результат в формате <code>XXX,YYYYY</code> — Facility-код и Card-код (Wiegand 26).<br>
+      Можно вставлять несколько десятичных кодов через запятую, пробел или с новой строки.
+    </div>
+  </div>
+
+<script>
+(function() {
+  const inputEl = document.getElementById('input');
+  const outputEl = document.getElementById('output');
+  const convertBtn = document.getElementById('convertBtn');
+  const copyBtn = document.getElementById('copyBtn');
+  const clearBtn = document.getElementById('clearBtn');
+
+  // Дополнение числа нулями слева до нужной длины
+  function pad(num, len) {
+    return String(num).padStart(len, '0');
+  }
+
+  // Преобразование десятичного кода в строку "XXX,YYYYY"
+  // Wiegand 26: facility 8 бит + card 16 бит
+  function toW26Text(dec) {
+    if (dec > 0xFFFFFF) {
+      return '⚠ слишком велико для W26 (макс. 16777215)';
+    }
+    const facility = (dec >> 16) & 0xFF;
+    const card = dec & 0xFFFF;
+    // facility — 3 цифры, card — 5 цифр
+    return `${pad(facility, 3)},${pad(card, 5)}`;
+  }
+
+  // Разбить вставленный текст на отдельные числа
+  function extractNumbers(text) {
+    const matches = text.match(/\d+/g);
+    return matches ? matches.map(s => parseInt(s, 10)) : [];
+  }
+
+  function convert() {
+    const raw = inputEl.value.trim();
+    if (!raw) {
+      outputEl.value = '';
+      return;
+    }
+
+    const numbers = extractNumbers(raw);
+    if (numbers.length === 0) {
+      outputEl.value = '⚠ Не найдено ни одного числа во вводе.';
+      return;
+    }
+
+    const lines = numbers.map(n => toW26Text(n));
+    outputEl.value = lines.join('\n');
+  }
+
+  convertBtn.addEventListener('click', convert);
+
+  inputEl.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      convert();
+    }
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    if (!outputEl.value) return;
+    try {
+      await navigator.clipboard.writeText(outputEl.value);
+      const old = copyBtn.textContent;
+      copyBtn.textContent = '✓ Скопировано';
+      setTimeout(() => { copyBtn.textContent = old; }, 1200);
+    } catch (e) {
+      outputEl.select();
+      document.execCommand('copy');
+    }
+  });
+
+  clearBtn.addEventListener('click', () => {
+    inputEl.value = '';
+    outputEl.value = '';
+    inputEl.focus();
+  });
+})();
+</script>
+</body>
+</html>
