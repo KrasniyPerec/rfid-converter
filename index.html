@@ -6,90 +6,95 @@
 <title>NightOps — RFID Converter</title>
 
 <style>
+* {
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
 :root {
     --bg: #080d18;
     --panel: #111a2b;
-    --panel2: #0c1423;
-    --border: #263a56;
-    --text: #e8eef8;
-    --muted: #8190a8;
+    --panel2: #0d1524;
     --accent: #35b8f4;
     --green: #37d6a0;
     --red: #ff647c;
+    --text: #e8f0fb;
+    --muted: #8c9bb3;
+    --border: #26364c;
 }
-
-* { box-sizing: border-box; }
 
 body {
-    margin: 0;
+    background: radial-gradient(ellipse at top, #10243b 0%, var(--bg) 55%);
     min-height: 100vh;
-    padding: 38px 20px 28px;
+    margin: 0;
+    padding: 24px;
     color: var(--text);
-    font-family: "Segoe UI", Arial, sans-serif;
-    background:
-        radial-gradient(ellipse at 50% -18%, #1b3c5d 0%, #102139 28%, transparent 62%),
-        radial-gradient(ellipse at 100% 75%, #10233b55 0%, transparent 42%),
-        linear-gradient(145deg, #080d18, #0b1423 58%, #080d18);
 }
 
-.container {
-    width: min(100%, 1080px);
+.app {
+    width: 100%;
+    max-width: 900px;
     margin: 0 auto;
 }
 
 /* HEADER */
 
-.header {
+.topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 18px;
-    margin-bottom: 42px;
+    gap: 16px;
+    margin-bottom: 26px;
+    padding: 0 4px;
 }
 
 .brand {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .brand-icon {
-    width: 50px;
-    height: 50px;
-    flex: 0 0 50px;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
     border: 1px solid #28638c;
-    border-radius: 15px;
+    border-radius: 14px;
     background: linear-gradient(145deg, #153653, #102137);
-    box-shadow: 0 0 28px #1686c322, inset 0 1px 0 #ffffff12;
+    box-shadow: 0 0 25px #1686c322;
 }
 
 .brand-name {
-    font-size: 19px;
-    font-weight: 800;
-    letter-spacing: 2.2px;
+    font-weight: 850;
+    font-size: 22px;
+    letter-spacing: -.7px;
+    color: #fff;
 }
 
-.brand-subtitle {
-    margin-top: 6px;
+.brand-name span {
+    color: var(--accent);
+}
+
+.brand-sub {
     color: var(--muted);
     font-size: 10px;
-    letter-spacing: 2.3px;
-    font-weight: 600;
+    letter-spacing: 2px;
+    margin-top: 2px;
 }
 
-/* STATUS */
+/* SYSTEM STATUS */
 
 .status {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 9px 14px;
+    gap: 8px;
     border: 1px solid var(--border);
     border-radius: 999px;
-    background: #111a2b;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1.15px;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
     transition: .25s;
 }
 
@@ -97,7 +102,7 @@ body {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    transition: .25s;
+    flex-shrink: 0;
 }
 
 .status[data-state="ready"],
@@ -110,7 +115,7 @@ body {
 .status[data-state="ready"] .status-dot,
 .status[data-state="success"] .status-dot {
     background: var(--green);
-    box-shadow: 0 0 11px var(--green);
+    box-shadow: 0 0 10px #37d6a088;
 }
 
 .status[data-state="processing"] {
@@ -144,119 +149,118 @@ body {
 
 .status[data-state="standby"] .status-dot {
     background: #64748b;
-    box-shadow: none;
 }
 
 @keyframes pulse {
-    from { opacity: .35; }
+    from { opacity: .45; }
     to { opacity: 1; }
+}
+
+/* MAIN CARD */
+
+.card {
+    background: linear-gradient(
+        160deg,
+        rgba(17, 26, 43, .98),
+        rgba(12, 19, 32, .98)
+    );
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: 0 24px 60px #0005, 0 1px 0 #ffffff08 inset;
+    padding: clamp(20px, 4vw, 34px);
 }
 
 /* TITLE */
 
-.page-title {
-    margin-bottom: 26px;
+.heading {
+    margin-bottom: 28px;
 }
 
-.page-title h1 {
-    margin: 0 0 10px;
-    font-size: clamp(30px, 4.5vw, 42px);
-    line-height: 1.08;
-    letter-spacing: -1.2px;
-    font-weight: 760;
+.eyebrow {
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 800;
+    margin-bottom: 8px;
 }
 
-.page-title h1 span { color: var(--accent); }
-
-.page-title p {
+h1 {
     margin: 0;
+    font-size: clamp(25px, 4vw, 34px);
+    line-height: 1.2;
+    letter-spacing: -.8px;
+    color: #f2f7ff;
+}
+
+h1 span {
+    color: var(--accent);
+}
+
+.description {
+    margin: 10px 0 0;
     color: var(--muted);
     font-size: 14px;
-    line-height: 1.65;
+    line-height: 1.5;
 }
 
-/* WORKSPACE */
-
-.workspace {
-    position: relative;
-    overflow: hidden;
-    padding: 28px;
-    border: 1px solid #2a405e;
-    border-radius: 20px;
-    background: linear-gradient(145deg, #142137, #0e1727);
-    box-shadow: 0 24px 70px #00000050;
-}
-
-.workspace::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 8%;
-    right: 8%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #35b8f477, transparent);
-    pointer-events: none;
-}
+/* SECTION HEADINGS */
 
 .section-heading {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 13px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
 }
 
 .section-title {
     display: flex;
     align-items: center;
-    gap: 10px;
-    color: #dce7f5;
+    gap: 9px;
     font-size: 12px;
     font-weight: 800;
-    letter-spacing: 1.05px;
+    letter-spacing: 1px;
 }
 
 .section-number {
-    display: inline-grid;
-    place-items: center;
-    width: 25px;
-    height: 25px;
-    border: 1px solid #28638c;
-    border-radius: 8px;
-    background: #10283d;
     color: var(--accent);
-    font-size: 10px;
+    font-size: 11px;
+    font-weight: 800;
 }
 
 .section-hint {
-    color: #70839e;
+    color: var(--muted);
     font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.25px;
+    letter-spacing: 1px;
 }
+
+/* TEXTAREAS */
 
 textarea {
     display: block;
     width: 100%;
     min-height: 190px;
     resize: vertical;
-    padding: 18px 19px;
-    border: 1px solid #263b57;
-    border-radius: 13px;
+    padding: 17px;
+    border: 1px solid #2a3a52;
+    border-radius: 14px;
     outline: none;
-    background: linear-gradient(145deg, #0a1322, #0c1626);
-    color: var(--text);
+    background: #080f1c;
+    color: #f4f8ff;
     font-family: Consolas, "Courier New", monospace;
-    font-size: 13px;
-    line-height: 1.85;
-    transition: .2s;
+    font-size: 14px;
+    line-height: 1.8;
+    transition: border-color .18s, box-shadow .18s, background .18s;
 }
 
-textarea::placeholder { color: #53647d; }
+textarea::placeholder {
+    color: #52627a;
+}
 
 textarea:focus {
-    border-color: #278fc3;
-    box-shadow: 0 0 0 3px #1686c322;
+    border-color: var(--accent);
+    background: #0b1524;
+    box-shadow: 0 0 0 3px #35b8f420, 0 0 18px #35b8f410;
 }
 
 .output-area {
@@ -264,18 +268,26 @@ textarea:focus {
     color: var(--green);
 }
 
+.output-area:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px #37d6a020, 0 0 18px #37d6a010;
+}
+
+/* COUNTERS */
+
 .meta-row {
     display: flex;
     justify-content: space-between;
     gap: 12px;
-    margin-top: 10px;
-    color: #71839c;
+    margin-top: 9px;
+    color: var(--muted);
     font-size: 11px;
 }
 
 .meta-row strong {
     color: var(--accent);
     font-weight: 700;
+    font-variant-numeric: tabular-nums;
 }
 
 /* BUTTONS */
@@ -284,35 +296,42 @@ textarea:focus {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin: 23px 0 27px;
+    margin: 22px 0 26px;
 }
 
 button {
     min-height: 44px;
-    padding: 0 18px;
-    border: 1px solid #2a405e;
-    border-radius: 10px;
-    background: linear-gradient(145deg, #1a2a42, #152238);
-    color: #dce7f5;
-    font-size: 12px;
-    font-weight: 700;
+    padding: 0 19px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #18263b;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 650;
     cursor: pointer;
     transition: .2s;
 }
 
 button:hover {
+    border-color: #42658a;
+    background: #20334e;
     transform: translateY(-1px);
-    border-color: #45698f;
-    background: #223752;
 }
 
-button:active { transform: translateY(0); }
+button:active {
+    transform: translateY(0);
+}
+
+button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
 
 .primary-btn {
     border-color: #168bc9;
     background: linear-gradient(135deg, #168bc9, #1265a6);
     color: white;
-    box-shadow: 0 6px 22px #168bc933;
+    box-shadow: 0 5px 20px #168bc933;
 }
 
 .primary-btn:hover {
@@ -322,13 +341,13 @@ button:active { transform: translateY(0); }
 
 .copy-btn {
     border-color: #23664f;
-    background: #15382e;
+    background: #123126;
     color: var(--green);
 }
 
 .copy-btn:hover {
     border-color: #37a77d;
-    background: #1b493a;
+    background: #194332;
 }
 
 .clear-btn {
@@ -336,86 +355,134 @@ button:active { transform: translateY(0); }
     color: #a8b3c5;
 }
 
-/* INFO */
+/* INFO PANEL */
 
 .info-panel {
     display: flex;
     align-items: flex-start;
-    gap: 13px;
-    padding: 16px 18px;
-    border: 1px solid #29415f;
-    border-radius: 13px;
-    background: linear-gradient(110deg, #12243a, #101d30);
+    gap: 12px;
+    padding: 15px 17px;
+    border: 1px solid #26364c;
+    border-radius: 14px;
+    background: #0a1321;
 }
 
 .info-icon {
     color: var(--accent);
     font-size: 18px;
+    flex-shrink: 0;
 }
 
 .info-text {
-    color: #8c9bb0;
-    font-size: 11px;
-    line-height: 1.8;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
 }
 
-.info-text strong { color: #d0deed; }
+.info-text strong {
+    color: #c8eaff;
+}
 
 /* FOOTER */
 
 .footer {
     display: flex;
     justify-content: space-between;
-    gap: 14px;
-    margin-top: 22px;
-    color: #5f718a;
-    font-size: 10px;
-    letter-spacing: 1.1px;
+    gap: 12px;
+    margin-top: 18px;
+    padding: 0 4px;
+    color: #62758e;
+    font-size: 11px;
+    letter-spacing: .8px;
 }
-
-.footer span:last-child { color: #7187a3; }
 
 /* MOBILE */
 
-@media (max-width: 640px) {
-    body { padding: 22px 12px 20px; }
-    .header { margin-bottom: 34px; }
-    .brand { gap: 10px; }
-    .brand-icon {
-        width: 44px;
-        height: 44px;
-        flex-basis: 44px;
-        border-radius: 13px;
+@media (max-width: 600px) {
+    body {
+        padding: 16px;
     }
-    .brand-name { font-size: 16px; }
-    .brand-subtitle { font-size: 8px; letter-spacing: 1.5px; }
-    .status { padding: 7px 9px; font-size: 8px; }
-    .workspace { padding: 17px; border-radius: 16px; }
-    textarea { min-height: 160px; padding: 14px; font-size: 12px; }
-    .output-area { min-height: 160px; }
-    .actions { gap: 8px; margin: 20px 0 24px; }
-    .actions button { flex: 1 1 auto; padding: 0 12px; }
-    .clear-btn { margin-left: 0; }
-    .footer { flex-direction: column; gap: 7px; }
 
+    .topbar {
+        margin: 8px 2px 20px;
+    }
+
+    .brand {
+        gap: 9px;
+    }
+
+    .brand-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+    }
+
+    .brand-name {
+        font-size: 20px;
+    }
+
+    .brand-sub {
+        font-size: 9px;
+        letter-spacing: 1.5px;
+    }
+
+    .status {
+        padding: 7px 9px;
+        font-size: 9px;
+        letter-spacing: .5px;
+    }
+
+    .card {
+        border-radius: 20px;
+    }
+
+    textarea {
+        min-height: 160px;
+        padding: 14px;
+        font-size: 13px;
+    }
+
+    .actions button {
+        flex: 1 1 auto;
+    }
+
+    .clear-btn {
+        margin-left: 0;
+    }
+
+    .footer {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+@media (max-width: 380px) {
+    .topbar {
+        align-items: flex-start;
+    }
+
+    .status {
+        font-size: 8px;
+        gap: 6px;
+    }
+
+    .brand-name {
+        font-size: 18px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<main class="app">
 
-    <header class="header">
+    <header class="topbar">
         <div class="brand">
             <div class="brand-icon"></div>
             <div>
-                <div class="brand-name">
-                    NIGHT<span style="color:#35b8f4">OPS</span>
-                </div>
-                <div class="brand-subtitle">
-                    RFID CONVERSION SYSTEM
-                </div>
+                <div class="brand-name">Night<span>Ops</span></div>
+                <div class="brand-sub">SYSTEM TOOLS</div>
             </div>
         </div>
 
@@ -425,12 +492,15 @@ button:active { transform: translateY(0); }
         </div>
     </header>
 
-    <div class="page-title">
-        <h1>RFID <span>Converter</span></h1>
-        <p>Преобразование идентификаторов в формат Wiegand 26</p>
-    </div>
+    <section class="card">
 
-    <main class="workspace">
+        <div class="heading">
+            <div class="eyebrow">ACCESS / RFID</div>
+            <h1>RFID <span>Converter</span></h1>
+            <p class="description">
+                Преобразование идентификаторов в формат Wiegand 26
+            </p>
+        </div>
 
         <div class="section-heading">
             <div class="section-title">
@@ -490,7 +560,7 @@ button:active { transform: translateY(0); }
             <span>Строк: <strong id="outputCount">0</strong></span>
         </div>
 
-        <div style="height:22px"></div>
+        <div style="height: 24px"></div>
 
         <div class="info-panel">
             <div class="info-icon">ⓘ</div>
@@ -503,14 +573,14 @@ button:active { transform: translateY(0); }
             </div>
         </div>
 
-    </main>
+    </section>
 
     <footer class="footer">
-        <span>NIGHTOPS TECHNOLOGY</span>
-        <span>RFID MODULE · W26 · VERSION 2.0</span>
+        <span>NIGHTOPS / RFID CONVERTER</span>
+        <span>LOCAL · NO DATA SENT</span>
     </footer>
 
-</div>
+</main>
 
 <script>
 
