@@ -3,188 +3,672 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Конвертер кода RFID-карты</title>
+<title>NightOps — RFID Converter</title>
+
 <style>
-  * { box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-  body {
-    background: linear-gradient(145deg, #eef2f8 0%, #d4dfee 100%);
-    min-height: 100vh; margin: 0;
-    display: flex; justify-content: center; align-items: center;
-    padding: 1rem;
-  }
-  .card {
-    background: rgba(255,255,255,0.85);
-    backdrop-filter: blur(10px);
-    border-radius: 32px;
-    box-shadow: 0 25px 40px -12px rgba(0,20,30,0.35), 0 0 0 1px rgba(255,255,255,0.6) inset;
-    padding: 2rem;
-    width: 100%; max-width: 720px;
-  }
-  h1 {
-    font-size: 1.6rem; font-weight: 600; color: #1a2e3f;
-    text-align: center; margin: 0 0 1.5rem;
-    letter-spacing: -0.01em;
-  }
-  .row { display: flex; gap: 1rem; flex-wrap: wrap; }
-  .col { flex: 1 1 280px; min-width: 240px; }
-  label {
-    display: block; font-size: 0.85rem; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.05em;
-    color: #2c4a62; margin-bottom: 0.5rem;
-  }
-  textarea {
-    width: 100%; min-height: 130px; resize: vertical;
-    padding: 0.9rem 1rem;
-    font-size: 1.05rem; font-family: 'SF Mono', Consolas, monospace;
-    border: none; border-radius: 18px;
-    background: #ffffff; color: #0b1c26;
-    box-shadow: 0 6px 12px -6px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.04);
-    outline: none; transition: box-shadow 0.15s ease;
-    line-height: 1.5;
-  }
-  textarea:focus {
-    box-shadow: 0 10px 20px -8px rgba(30,90,140,0.3), 0 0 0 3px rgba(90,150,220,0.25);
-  }
-  textarea[readonly] { background: #f5f8fc; color: #0b2a3f; }
-  .actions {
-    display: flex; gap: 0.8rem; justify-content: center;
-    margin-top: 1.5rem; flex-wrap: wrap;
-  }
-  button {
-    padding: 0.9rem 2rem;
-    font-size: 1rem; font-weight: 600;
-    border: none; border-radius: 20px;
-    cursor: pointer; transition: all 0.15s ease;
-    letter-spacing: 0.02em;
-  }
-  .btn-primary {
-    background: linear-gradient(135deg, #4a90e2, #2a6fc9);
-    color: white;
-    box-shadow: 0 8px 20px -8px rgba(40,100,180,0.6);
-  }
-  .btn-primary:hover {
+:root {
+    --bg: #080d18;
+    --panel: #111a2b;
+    --panel2: #0c1423;
+    --border: #23334d;
+    --text: #e8eef8;
+    --muted: #8190a8;
+    --accent: #35b8f4;
+    --green: #37d6a0;
+    --red: #ff647c;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 35px 18px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(ellipse at 50% -20%, #183454 0%, transparent 55%),
+        linear-gradient(145deg, #080d18, #0c1423 65%, #080d18);
+}
+
+.container {
+    max-width: 1050px;
+    margin: 0 auto;
+}
+
+/* HEADER */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    gap: 15px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.brand-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #28638c;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #153653, #102137);
+    color: var(--accent);
+    font-size: 25px;
+    box-shadow: 0 0 25px #1686c322;
+}
+
+.brand-name {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.brand-subtitle {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+}
+
+/* SYSTEM STATUS */
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 13px;
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    transition: 0.25s;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    transition: 0.25s;
+}
+
+.status[data-state="ready"],
+.status[data-state="success"] {
+    color: var(--green);
+    border-color: #245543;
+    background: #10251f;
+}
+
+.status[data-state="ready"] .status-dot,
+.status[data-state="success"] .status-dot {
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+}
+
+.status[data-state="processing"] {
+    color: var(--accent);
+    border-color: #24577a;
+    background: #102337;
+}
+
+.status[data-state="processing"] .status-dot {
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 0.7s infinite alternate;
+}
+
+.status[data-state="error"] {
+    color: var(--red);
+    border-color: #713344;
+    background: #2b1620;
+}
+
+.status[data-state="error"] .status-dot {
+    background: var(--red);
+    box-shadow: 0 0 12px var(--red);
+}
+
+.status[data-state="standby"] {
+    color: var(--muted);
+    border-color: var(--border);
+    background: #111a2b;
+}
+
+.status[data-state="standby"] .status-dot {
+    background: #64748b;
+    box-shadow: none;
+}
+
+@keyframes pulse {
+    from { opacity: 0.45; }
+    to { opacity: 1; }
+}
+
+/* TITLE */
+
+.page-title {
+    margin-bottom: 25px;
+}
+
+.page-title h1 {
+    margin: 0 0 9px;
+    font-size: clamp(25px, 4vw, 34px);
+    font-weight: 750;
+    letter-spacing: -0.5px;
+}
+
+.page-title h1 span {
+    color: var(--accent);
+}
+
+.page-title p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* WORKSPACE */
+
+.workspace {
+    padding: 25px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: linear-gradient(145deg, #121d30, #0e1727);
+    box-shadow: 0 20px 60px #00000045;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 13px;
+    gap: 10px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.section-number {
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.section-hint {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+textarea {
+    display: block;
+    width: 100%;
+    min-height: 190px;
+    resize: vertical;
+    padding: 17px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    outline: none;
+    background: var(--panel2);
+    color: var(--text);
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+textarea::placeholder {
+    color: #52627a;
+}
+
+textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px #1686c322;
+}
+
+.output-area {
+    min-height: 190px;
+    color: var(--green);
+}
+
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 9px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.meta-row strong {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* BUTTONS */
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 22px 0;
+}
+
+button {
+    min-height: 43px;
+    padding: 0 19px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #18263b;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    border-color: #42658a;
+    background: #20334e;
     transform: translateY(-1px);
-    box-shadow: 0 12px 24px -8px rgba(40,100,180,0.7);
-  }
-  .btn-primary:active { transform: translateY(0); }
-  .btn-secondary {
-    background: #ffffff; color: #2c4a62;
-    box-shadow: 0 4px 10px -4px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05) inset;
-  }
-  .btn-secondary:hover { background: #f5f8fc; }
-  .hint {
-    margin-top: 1.2rem; font-size: 0.85rem; color: #4c667a;
-    text-align: center; line-height: 1.5;
-  }
-  .hint code {
-    background: rgba(0,0,0,0.05); padding: 0.1rem 0.4rem;
-    border-radius: 8px; font-size: 0.85rem;
-  }
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.primary-btn {
+    border-color: #168bc9;
+    background: linear-gradient(135deg, #168bc9, #1265a6);
+    color: white;
+    box-shadow: 0 5px 20px #168bc933;
+}
+
+.primary-btn:hover {
+    border-color: #43bdff;
+    background: linear-gradient(135deg, #20a5e9, #1679c0);
+}
+
+.copy-btn {
+    border-color: #23664f;
+    background: #123126;
+    color: var(--green);
+}
+
+.copy-btn:hover {
+    border-color: #37a77d;
+    background: #194332;
+}
+
+.clear-btn {
+    margin-left: auto;
+    color: #a8b3c5;
+}
+
+/* INFO */
+
+.info-panel {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px 17px;
+    border: 1px solid #263c59;
+    border-radius: 12px;
+    background: #101e31;
+}
+
+.info-icon {
+    color: var(--accent);
+    font-size: 18px;
+}
+
+.info-text {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.info-text strong {
+    color: #c8d9eb;
+}
+
+/* FOOTER */
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 23px;
+    color: #596a82;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+.footer span:last-child {
+    color: #7187a3;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+    body {
+        padding: 20px 12px;
+    }
+
+    .header {
+        margin-bottom: 24px;
+    }
+
+    .workspace {
+        padding: 16px;
+    }
+
+    .brand-name {
+        font-size: 16px;
+    }
+
+    .status {
+        padding: 7px 9px;
+        font-size: 9px;
+    }
+
+    textarea {
+        min-height: 160px;
+        font-size: 13px;
+    }
+
+    .actions button {
+        flex: 1 1 auto;
+    }
+
+    .clear-btn {
+        margin-left: 0;
+    }
+
+    .footer {
+        flex-direction: column;
+    }
+}
 </style>
 </head>
+
 <body>
-  <div class="card">
-    <h1>📇 Конвертер кода RFID-карты</h1>
 
-    <div class="row">
-      <div class="col">
-        <label for="input">Десятичный код</label>
-        <textarea id="input" placeholder="Вставьте десятичный код&#10;Например: 1234567890&#10;Можно несколько через запятую/пробел/перенос строки"></textarea>
-      </div>
-      <div class="col">
-        <label for="output">Текстовый формат (F,C — вида 037,01594)</label>
-        <textarea id="output" readonly placeholder="Здесь появится результат..."></textarea>
-      </div>
+<div class="container">
+
+    <header class="header">
+        <div class="brand">
+            <div class="brand-icon">⌁</div>
+            <div>
+                <div class="brand-name">
+                    NIGHT<span style="color:#35b8f4">OPS</span>
+                </div>
+                <div class="brand-subtitle">
+                    RFID CONVERSION SYSTEM
+                </div>
+            </div>
+        </div>
+
+        <div class="status" id="systemStatus" data-state="ready">
+            <span class="status-dot"></span>
+            <span id="statusText">SYSTEM READY</span>
+        </div>
+    </header>
+
+    <div class="page-title">
+        <h1>RFID <span>Converter</span></h1>
+        <p>Преобразование идентификаторов в формат Wiegand 26</p>
     </div>
 
-    <div class="actions">
-      <button class="btn-primary" id="convertBtn">Конвертировать</button>
-      <button class="btn-secondary" id="copyBtn">Копировать результат</button>
-      <button class="btn-secondary" id="clearBtn">Очистить</button>
-    </div>
+    <main class="workspace">
 
-    <div class="hint">
-      💡 Результат в формате <code>XXX,YYYYY</code> — Facility-код и Card-код (Wiegand 26).<br>
-      Можно вставлять несколько десятичных кодов через запятую, пробел или с новой строки.
-    </div>
-  </div>
+        <div class="section-heading">
+            <div class="section-title">
+                <span class="section-number">01</span>
+                ВХОДНЫЕ ДАННЫЕ
+            </div>
+            <span class="section-hint">DECIMAL / DEC</span>
+        </div>
+
+        <textarea
+            id="input"
+            placeholder="Вставьте номера карт сюда...
+
+Например:
+123456
+654321
+987654"
+            spellcheck="false"
+        ></textarea>
+
+        <div class="meta-row">
+            <span>Входные идентификаторы</span>
+            <span>Найдено: <strong id="inputCount">0</strong></span>
+        </div>
+
+        <div class="actions">
+            <button class="primary-btn" id="convertBtn">
+                ⇄ Конвертировать
+            </button>
+
+            <button class="copy-btn" id="copyBtn">
+                ⧉ Копировать результат
+            </button>
+
+            <button class="clear-btn" id="clearBtn">
+                ✕ Очистить
+            </button>
+        </div>
+
+        <div class="section-heading">
+            <div class="section-title">
+                <span class="section-number">02</span>
+                РЕЗУЛЬТАТ
+            </div>
+            <span class="section-hint">WIEGAND 26</span>
+        </div>
+
+        <textarea
+            id="output"
+            class="output-area"
+            placeholder="Здесь появятся преобразованные номера..."
+            spellcheck="false"
+        ></textarea>
+
+        <div class="meta-row">
+            <span>Результат конвертации</span>
+            <span>Строк: <strong id="outputCount">0</strong></span>
+        </div>
+
+        <div style="height:22px"></div>
+
+        <div class="info-panel">
+            <div class="info-icon">ⓘ</div>
+            <div class="info-text">
+                <strong>Формат Wiegand 26</strong><br>
+                Результат представлен в виде Facility Code и Card Number.
+                Каждый идентификатор выводится с новой строки.
+                Для быстрого запуска конвертации используйте
+                <strong>Ctrl + Enter</strong>.
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <span>NIGHTOPS TECHNOLOGY</span>
+        <span>RFID MODULE · W26 · VERSION 2.0</span>
+    </footer>
+
+</div>
 
 <script>
-(function() {
-  const inputEl = document.getElementById('input');
-  const outputEl = document.getElementById('output');
-  const convertBtn = document.getElementById('convertBtn');
-  const copyBtn = document.getElementById('copyBtn');
-  const clearBtn = document.getElementById('clearBtn');
 
-  // Дополнение числа нулями слева до нужной длины
-  function pad(num, len) {
-    return String(num).padStart(len, '0');
-  }
+/* ELEMENTS */
 
-  // Преобразование десятичного кода в строку "XXX,YYYYY"
-  // Wiegand 26: facility 8 бит + card 16 бит
-  function toW26Text(dec) {
-    if (dec > 0xFFFFFF) {
-      return '⚠ слишком велико для W26 (макс. 16777215)';
-    }
+const input = document.getElementById('input');
+const output = document.getElementById('output');
+
+const convertBtn = document.getElementById('convertBtn');
+const copyBtn = document.getElementById('copyBtn');
+const clearBtn = document.getElementById('clearBtn');
+
+const inputCount = document.getElementById('inputCount');
+const outputCount = document.getElementById('outputCount');
+
+const systemStatus = document.getElementById('systemStatus');
+const statusText = document.getElementById('statusText');
+
+
+/* SYSTEM STATUS */
+
+function setStatus(state, text) {
+    systemStatus.dataset.state = state;
+    statusText.textContent = text;
+}
+
+
+/* WIEGAND 26 CONVERTER */
+/* Исходный алгоритм сохранён */
+
+function toW26Text(dec) {
+    if (dec > 0xFFFFFF) return 'ERROR: превышен лимит W26';
+
     const facility = (dec >> 16) & 0xFF;
     const card = dec & 0xFFFF;
-    // facility — 3 цифры, card — 5 цифр
-    return `${pad(facility, 3)},${pad(card, 5)}`;
-  }
 
-  // Разбить вставленный текст на отдельные числа
-  function extractNumbers(text) {
-    const matches = text.match(/\d+/g);
-    return matches ? matches.map(s => parseInt(s, 10)) : [];
-  }
+    return `${String(facility).padStart(3, '0')},${String(card).padStart(5, '0')}`;
+}
 
-  function convert() {
-    const raw = inputEl.value.trim();
+
+/* EXTRACT NUMBERS */
+
+function extractNumbers(text) {
+    return (text.match(/\d+/g) || []).map(s => parseInt(s, 10));
+}
+
+
+/* COUNTERS */
+
+function updateCounters() {
+    inputCount.textContent = extractNumbers(input.value).length;
+
+    const result = output.value.trim();
+
+    outputCount.textContent = result
+        ? result.split('\n').length
+        : 0;
+}
+
+
+/* CONVERSION */
+
+function convert() {
+    const raw = input.value.trim();
+
     if (!raw) {
-      outputEl.value = '';
-      return;
+        output.value = '';
+        updateCounters();
+        setStatus('standby', 'STANDBY');
+        return;
     }
 
-    const numbers = extractNumbers(raw);
-    if (numbers.length === 0) {
-      outputEl.value = '⚠ Не найдено ни одного числа во вводе.';
-      return;
-    }
+    setStatus('processing', 'PROCESSING');
 
-    const lines = numbers.map(n => toW26Text(n));
-    outputEl.value = lines.join('\n');
-  }
+    requestAnimationFrame(() => {
+        const nums = extractNumbers(raw);
 
-  convertBtn.addEventListener('click', convert);
+        if (nums.length === 0) {
+            output.value = 'Нет чисел для конвертации.';
+            updateCounters();
+            setStatus('error', 'INPUT ERROR');
+            return;
+        }
 
-  inputEl.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      e.preventDefault();
-      convert();
-    }
-  });
+        output.value = nums.map(toW26Text).join('\n');
 
-  copyBtn.addEventListener('click', async () => {
-    if (!outputEl.value) return;
+        updateCounters();
+
+        const hasErrors = output.value.includes('ERROR:');
+
+        if (hasErrors) {
+            setStatus('error', 'INPUT ERROR');
+        } else {
+            setStatus('success', 'CONVERSION OK');
+        }
+    });
+}
+
+
+/* COPY RESULT */
+
+copyBtn.addEventListener('click', async () => {
+    if (!output.value) return;
+
     try {
-      await navigator.clipboard.writeText(outputEl.value);
-      const old = copyBtn.textContent;
-      copyBtn.textContent = '✓ Скопировано';
-      setTimeout(() => { copyBtn.textContent = old; }, 1200);
+        await navigator.clipboard.writeText(output.value);
     } catch (e) {
-      outputEl.select();
-      document.execCommand('copy');
+        output.select();
+        document.execCommand('copy');
     }
-  });
 
-  clearBtn.addEventListener('click', () => {
-    inputEl.value = '';
-    outputEl.value = '';
-    inputEl.focus();
-  });
-})();
+    const oldText = copyBtn.textContent;
+    copyBtn.textContent = '✓ Скопировано';
+
+    setTimeout(() => {
+        copyBtn.textContent = oldText;
+    }, 1200);
+});
+
+
+/* CLEAR */
+
+clearBtn.addEventListener('click', () => {
+    input.value = '';
+    output.value = '';
+
+    updateCounters();
+    setStatus('standby', 'STANDBY');
+
+    input.focus();
+});
+
+
+/* EVENTS */
+
+convertBtn.addEventListener('click', convert);
+
+input.addEventListener('input', updateCounters);
+output.addEventListener('input', updateCounters);
+
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+        convert();
+    }
+});
+
+
+/* INITIALIZATION */
+
+updateCounters();
+setStatus('ready', 'SYSTEM READY');
+
 </script>
+
 </body>
 </html>
